@@ -5,12 +5,12 @@ public class Property {
     public static final int PENALTY =  2;
 
     private String name;
-    private int owner;
+    private String owner;
     private int type;
     private int cost;
     private int space;
 
-    public Property(String name, int owner, int type, int cost, int space) {
+    public Property(String name, String owner, int type, int cost, int space) {
         this.name = name;
         this.owner = owner;
         this.type = type;
@@ -26,11 +26,11 @@ public class Property {
         this.name = name;
     }
 
-    public int getOwner() {
+    public String getOwner() {
         return owner;
     }
 
-    public void setOwner(int owner) {
+    public void setOwner(String owner) {
         this.owner = owner;
     }
 
