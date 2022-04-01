@@ -57,4 +57,15 @@ public class Property {
     public void setSpace(int space) {
         this.space = space;
     }
+
+    @Override
+    public String toString() {
+        return "Property{" +
+                "name='" + name + '\'' +
+                ", owner='" + owner + '\'' +
+                ", type=" + type +
+                ", cost=" + cost +
+                ", space=" + space +
+                '}';
+    }
 }

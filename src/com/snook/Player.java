@@ -3,11 +3,17 @@ package com.snook;
 public class Player {
 
     private String name;
-    private int space;
+    private int position;
     private int money;
+    private int games;
+    private int rolled;
 
-    public Player(String name) {
+    public Player(String name, int space, int money, int games, int rolled) {
         this.name = name;
+        this.position = space;
+        this.money = money;
+        this.games = games;
+        this.rolled = rolled;
     }
 
     public String getName() {
@@ -18,22 +24,31 @@ public class Player {
         this.name = name;
     }
 
-    public int getSpace() {
-        return space;
-    }
+    public int getPosition() {return position;}
 
-    public void setSpace(int space) {
-        this.space = space;
+    public void setPosition(int space) {
+        this.position = space;
     }
 
     public int getMoney() {
         return money;
     }
 
-    public void setMoney(int money) {
-        this.money = money;
-    }
+    public  void movePiece(int spaceMove) { position += spaceMove; }
 
-    public  void movePiece(int spaceMove) { space += spaceMove; }
+    public int getGames() { return games;}
 
+    public void setGames(int games) { this.games = games;}
+
+    public void addMoney(int money) { this.money += money;}
+
+    public void removeMoney(int money) { this.money -= money;}
+
+    public void setMoney(int money) { this.money = money;}
+
+    public int getRolled() {return rolled;}
+
+    public void setRolled(int rolled) {this.rolled = rolled;}
+
+    public void diceRolled() { rolled += 2;}
 }
