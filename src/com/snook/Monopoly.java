@@ -5,13 +5,13 @@ import java.util.*;
 public class Monopoly {
 
     public static void main(String[] args) {
-        Strategy strategy = new Strategy();
+        Statistic statistic = new Statistic();
 
         int numberGames = 5;
         for (int i = 0; i < numberGames; i++){
-            simulationGame(setProperties(), registerPlayers(), strategy);
+            simulationGame(setProperties(), registerPlayers(), statistic);
         }
-        System.out.println("Average number of rolls(turns): " + strategy.getAverageTurns() / strategy.totalGames);
+        System.out.println("Average number of rolls(turns): " + statistic.getAverageTurns() / statistic.totalGames);
     }
 
     private static ArrayList<Player> registerPlayers() {
@@ -24,19 +24,19 @@ public class Monopoly {
         return players;
     }
 
-    public static void simulationGame(Map<Integer, Property> properties, ArrayList<Player> players, Strategy strategy) {
+    public static void simulationGame(Map<Integer, Property> properties, ArrayList<Player> players, Statistic statistic) {
         Dice dice = new Dice();
         boolean endGame = false;
         int actualPlayer = 1;
 
-        strategy.addTotalGames();
+        statistic.addTotalGames();
         do {
             endGame = takeTurn(players.get(actualPlayer - 1), dice, properties);
             actualPlayer = nextPlayer(actualPlayer);
         }
         while(!endGame);
         Double averageTurnsPerGame = Double.valueOf((players.get(0).getRolled() + players.get(1).getRolled()) / players.size());
-        strategy.addAverageTurns(averageTurnsPerGame);
+        statistic.addAverageTurns(averageTurnsPerGame);
     }
 
     private static int nextPlayer(int actualPlayer) {

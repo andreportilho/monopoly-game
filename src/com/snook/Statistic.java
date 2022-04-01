@@ -1,12 +1,12 @@
 package com.snook;
 
-public class Strategy {
+public class Statistic {
     public Double averageTurns;
     public Double averageProperties;
     public Double percetageIndianaAvenuePurchased;
     public Integer totalGames;
 
-    public Strategy() {
+    public Statistic() {
         this.averageTurns = 0.0;
         this.averageProperties = 0.0;
         this.percetageIndianaAvenuePurchased = 0.0;
