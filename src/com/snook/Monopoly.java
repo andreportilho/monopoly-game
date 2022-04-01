@@ -26,7 +26,7 @@ public class Monopoly {
 
     public static void simulationGame(Map<Integer, Property> properties, ArrayList<Player> players, Statistic statistic) {
         Dice dice = new Dice();
-        boolean endGame = false;
+        boolean endGame;
         int actualPlayer = 1;
 
         statistic.addTotalGames();
@@ -49,7 +49,7 @@ public class Monopoly {
     }
 
     public static boolean takeTurn(Player player, Dice dice, Map<Integer, Property> properties) {
-        boolean endGame = false;
+        boolean endGame;
         int diceOne, diceTwo, sumDices;
 
         System.out.print("+-------------------+\n" +
