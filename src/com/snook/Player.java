@@ -50,5 +50,5 @@ public class Player {
 
     public void setRolled(int rolled) {this.rolled = rolled;}
 
-    public void diceRolled() { rolled += 2;}
+    public void diceRolled() { rolled += 1;}
 }
