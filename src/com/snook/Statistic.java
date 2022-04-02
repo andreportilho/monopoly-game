@@ -1,15 +1,15 @@
 package com.snook;
 
 public class Statistic {
-    public Double averageTurns;
-    public Double averageProperties;
-    public Double percetageIndianaAvenuePurchased;
-    public Integer totalGames;
+    private Double averageTurns;
+    private Integer totalPurchasedProperties;
+    private Integer totalIndianaAvenuePurchased;
+    private Integer totalGames;
 
     public Statistic() {
         this.averageTurns = 0.0;
-        this.averageProperties = 0.0;
-        this.percetageIndianaAvenuePurchased = 0.0;
+        this.totalPurchasedProperties = 0;
+        this.totalIndianaAvenuePurchased = 0;
         this.totalGames = 0;
     }
 
@@ -17,32 +17,24 @@ public class Statistic {
         return averageTurns;
     }
 
-    public void setAverageTurns(Double averageTurns) {
-        this.averageTurns = averageTurns;
-    }
-
     public void addAverageTurns(Double averageTurns) {
         this.averageTurns += averageTurns;
     }
 
-    public Double getAverageProperties() {
-        return averageProperties;
+    public Integer getTotalPurchasedProperties() {
+        return totalPurchasedProperties;
     }
 
-    public void setAverageProperties(Double averageProperties) {
-        this.averageProperties = averageProperties;
+    public void addAverageProperties(Integer averageProperties) {
+        this.totalPurchasedProperties += averageProperties;
     }
 
-    public void addAverageProperties(Double averageProperties) {
-        this.averageProperties += averageProperties;
+    public void addTotalIndianaAvenuePurchased() {
+        this.totalIndianaAvenuePurchased += 1;
     }
 
-    public Double getPercetageIndianaAvenuePurchased() {
-        return percetageIndianaAvenuePurchased;
-    }
-
-    public void setPercetageIndianaAvenuePurchased(Double percetageIndianaAvenuePurchased) {
-        this.percetageIndianaAvenuePurchased = percetageIndianaAvenuePurchased;
+    public Integer getTotalIndianaAvenuePurchased() {
+        return totalIndianaAvenuePurchased;
     }
 
     public Integer getTotalGames() {

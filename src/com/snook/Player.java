@@ -4,16 +4,14 @@ public class Player {
 
     private String name;
     private int position;
-    private int money;
-    private int games;
-    private int rolled;
+    private int balance;
+    private int diceRolled;
 
-    public Player(String name, int space, int money, int games, int rolled) {
+    public Player(String name, int space, int balance, int diceRolled) {
         this.name = name;
         this.position = space;
-        this.money = money;
-        this.games = games;
-        this.rolled = rolled;
+        this.balance = balance;
+        this.diceRolled = diceRolled;
     }
 
     public String getName() {
@@ -30,25 +28,17 @@ public class Player {
         this.position = space;
     }
 
-    public int getMoney() {
-        return money;
+    public int getBalance() {
+        return balance;
     }
 
     public  void movePiece(int spaceMove) { position += spaceMove; }
 
-    public int getGames() { return games;}
+    public void collectMoney(int money) { this.balance += money;}
 
-    public void setGames(int games) { this.games = games;}
+    public void removeMoney(int money) { this.balance -= money;}
 
-    public void addMoney(int money) { this.money += money;}
+    public int getDiceRolled() {return diceRolled;}
 
-    public void removeMoney(int money) { this.money -= money;}
-
-    public void setMoney(int money) { this.money = money;}
-
-    public int getRolled() {return rolled;}
-
-    public void setRolled(int rolled) {this.rolled = rolled;}
-
-    public void diceRolled() { rolled += 1;}
+    public void diceRolled() { diceRolled += 1;}
 }

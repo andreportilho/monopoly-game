@@ -8,14 +8,12 @@ public class Property {
     private String owner;
     private int type;
     private int cost;
-    private int space;
 
-    public Property(String name, String owner, int type, int cost, int space) {
+    public Property(String name, String owner, int type, int cost) {
         this.name = name;
         this.owner = owner;
         this.type = type;
         this.cost = cost;
-        this.space = space;
     }
 
     public String getName() {
@@ -38,34 +36,8 @@ public class Property {
         return type;
     }
 
-    public void setType(int type) {
-        this.type = type;
-    }
-
     public int getCost() {
         return cost;
     }
 
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public int getSpace() {
-        return space;
-    }
-
-    public void setSpace(int space) {
-        this.space = space;
-    }
-
-    @Override
-    public String toString() {
-        return "Property{" +
-                "name='" + name + '\'' +
-                ", owner='" + owner + '\'' +
-                ", type=" + type +
-                ", cost=" + cost +
-                ", space=" + space +
-                '}';
-    }
 }

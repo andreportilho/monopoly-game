@@ -1,26 +1,28 @@
 package com.snook;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class Monopoly {
 
     public static void main(String[] args) {
         Statistic statistic = new Statistic();
 
-        int numberGames = 5;
-        for (int i = 0; i < numberGames; i++){
+        int maxNumberOfGames = 5;
+        for (int i = 0; i < maxNumberOfGames; i++){
             simulationGame(setProperties(), registerPlayers(), statistic);
         }
-        System.out.println("Average number of rolls(turns): " + statistic.getAverageTurns() / statistic.totalGames);
+        System.out.println("Average number of rolls(turns): " + statistic.getAverageTurns() / statistic.getTotalGames());
+        System.out.println("Average number of properties purchased in all games: " + statistic.getTotalPurchasedProperties() / statistic.getTotalGames());
+
+        double percentageOfTotalIndianaAvenuePurchased = (statistic.getTotalIndianaAvenuePurchased() * 100) / statistic.getTotalGames();
+        System.out.println("Percent of how many times Indiana Avenue was purchased in all games: " + percentageOfTotalIndianaAvenuePurchased + "%");
     }
 
     private static ArrayList<Player> registerPlayers() {
-        ArrayList<Player> players;
-        players = new ArrayList<>();
-        Player playerOne = new Player("first player",  0, 1500, 0, 0);
-        Player playerTwo = new Player("second player", 0, 1000, 0, 0);
-        players.add(playerOne);
-        players.add(playerTwo);
+        ArrayList<Player> players = new ArrayList<>();
+        players.add(new Player("first player",  0, 1500, 0));
+        players.add(new Player("second player", 0, 1000, 0));
         return players;
     }
 
@@ -31,13 +33,40 @@ public class Monopoly {
 
         statistic.addTotalGames();
         do {
-            endGame = takeTurn(players.get(actualPlayer - 1), dice, properties);
+            endGame = playTurn(players.get(actualPlayer - 1), dice, properties);
             actualPlayer = nextPlayer(actualPlayer);
         }
         while(!endGame);
-        Double averageTurnsPerGame = Double.valueOf((players.get(0).getRolled() + players.get(1).getRolled()) / players.size());
-        statistic.addAverageTurns(averageTurnsPerGame);
+        //Average of dice rolled per game
+        statistic.addAverageTurns(sumDiceRolledPerGame(players) / players.size());
+        statistic.addAverageProperties(countPropertiesPurchasedPerGame(properties));
+        if (isIndianaAvenuePurchasedInGame(properties)) {
+            statistic.addTotalIndianaAvenuePurchased();
+        }
     }
+
+    public static double sumDiceRolledPerGame(ArrayList<Player> players) {
+        return players.stream().mapToDouble(Player::getDiceRolled).sum();
+    }
+
+    public static int countPropertiesPurchasedPerGame(Map<Integer, Property> properties) {
+        return (int) properties.entrySet()
+                .stream()
+                .filter(property -> property.getValue().getType() == Property.PROPERTY)
+                .filter(property -> !property.getValue().getOwner().isBlank())
+                .count();
+    }
+
+    public static boolean isIndianaAvenuePurchasedInGame(Map<Integer, Property> properties) {
+        Predicate<Map.Entry<Integer, Property>> indianaAvenue = property -> property.getValue().getName().equals("Indiana Avenue");
+        Predicate<Map.Entry<Integer, Property>> owned = property -> !property.getValue().getOwner().isBlank();
+        Predicate<Map.Entry<Integer, Property>> combinadeCondition = indianaAvenue.and(owned);
+        return properties.entrySet()
+                .stream()
+                .anyMatch(combinadeCondition);
+    }
+
+
 
     private static int nextPlayer(int actualPlayer) {
         if (actualPlayer == 1){
@@ -48,51 +77,44 @@ public class Monopoly {
         return actualPlayer;
     }
 
-    public static boolean takeTurn(Player player, Dice dice, Map<Integer, Property> properties) {
+    public static boolean playTurn(Player player, Dice dice, Map<Integer, Property> properties) {
         boolean endGame;
         int diceOne, diceTwo, sumDices;
-
-        System.out.print("+-------------------+\n" +
-                         "|     NEXT TURN     |\n" +
-                         "+-------------------+\n" +
-                         player.getRolled()  +"\n" +
-                         "_____________________\n");
-
-        //TODO arrumar nome secondroll
-        diceOne = dice.secondRoll();
+        Property property;
+        System.out.println("---------------------------------------");
+        System.out.println("New turn of player: " + player.getName());
+        System.out.println("Turn number: " + player.getDiceRolled());
+        
+        diceOne = dice.diceRoll();
         System.out.println("First dice: " + diceOne);
 
-        diceTwo = dice.secondRoll();
+        diceTwo = dice.diceRoll();
         System.out.println("Second dice: " + diceTwo);
 
         sumDices = diceOne + diceTwo;
 
+        //Increase dice rolled per turn.
         player.diceRolled();
 
-        player.setPosition(player.getPosition() + sumDices);
+        reachOrPassesGoPosition(player, sumDices);
 
-        Property property = null;
-        if (player.getPosition() > 39) {
-            int calculatedPosition = player.getPosition() - 40;
-            if (calculatedPosition == 0) {
-                player.setPosition(1);
-            } else {
-                player.setPosition(calculatedPosition);
-            }
-
-            if (player.getPosition() != 0) {
-                System.out.println("You passed property GO. Collect $200");
-            } else {
-                System.out.println("You landed on property GO. Collect $200");
-            }
-            player.addMoney(200);
-        }
-
+        //Take last position in game.
         property = properties.get(player.getPosition());
 
+        purchasePropertyOrPayPenalty(player, sumDices, property);
+
+        endGame = verifiyMaxDiceRolledOrCashBalance(player);
+        return endGame;
+    }
+
+    private static boolean verifiyMaxDiceRolledOrCashBalance(Player player) {
+        return player.getDiceRolled() > 1000 || player.getBalance() <= 0;
+    }
+
+    private static void purchasePropertyOrPayPenalty(Player player, int sumDices, Property property) {
         if (property != null) {
             if (property.getType() == Property.PROPERTY) {
-                if (player.getMoney() >= property.getCost() && property.getOwner() == "") {
+                if (player.getBalance() >= property.getCost() && property.getOwner().equals("")) {
                     player.removeMoney(property.getCost());
                     property.setOwner(player.getName());
                     System.out.println("You bought the property");
@@ -105,58 +127,72 @@ public class Monopoly {
                 player.movePiece(sumDices);
             }
         }
+    }
 
-        if (player.getRolled() > 1000 || player.getMoney() <= 0) {
-            endGame = true;
-        } else {
-            endGame = false;
+    private static void reachOrPassesGoPosition(Player player, int sumDices) {
+        player.setPosition(player.getPosition() + sumDices);
+
+        if (player.getPosition() > 39) {
+            int calculatedPosition = player.getPosition() - 40;
+            if (calculatedPosition == 0) {
+                player.setPosition(1);
+            } else {
+                player.setPosition(calculatedPosition);
+            }
+
+            //Only for know with passed or landed on GO.
+            if (player.getPosition() != 0) {
+                System.out.println("You passed property GO. Collect $200");
+            } else {
+                System.out.println("You landed on property GO. Collect $200");
+            }
+            player.collectMoney(200);
         }
-        return endGame;
     }
 
     public static Map<Integer, Property> setProperties() {
-        Map<Integer, Property> properties = new LinkedHashMap<>();
+        Map<Integer, Property> properties = new HashMap<>();
 
-        properties.put(1,  new Property("Mediterranean Avenue",  "", Property.PROPERTY, 60, 1));
-        properties.put(2,  new Property("Community Chest",       "", Property.PENALTY,  0,  2));
-        properties.put(3,  new Property("Baltic Avenue",         "", Property.PROPERTY, 60, 3));
-        properties.put(4,  new Property("Income Tax",            "", Property.PENALTY,  200,4));
-        properties.put(5,  new Property("Reading Railroad",      "", Property.PROPERTY, 200,5));
-        properties.put(6,  new Property("Oriental Avenue",       "", Property.PROPERTY, 100,6));
-        properties.put(7,  new Property("Chance",                "", Property.PROPERTY, 0,  7));
-        properties.put(8,  new Property("Vermont Avenue",        "", Property.PROPERTY, 100,8));
-        properties.put(9,  new Property("Connecticut Avenue",    "", Property.PROPERTY, 120,9));
-        properties.put(10, new Property("Jail Visit",            "", Property.PENALTY,  50, 10));
-        properties.put(11, new Property("St. Charles Place",     "", Property.PROPERTY, 140,11));
-        properties.put(12, new Property("Electric Company",      "", Property.PROPERTY, 150,12));
-        properties.put(13, new Property("States Avenue",         "", Property.PROPERTY, 140,13));
-        properties.put(14, new Property("Virginia Avenue",       "", Property.PROPERTY, 160,14));
-        properties.put(15, new Property("Pennsylvania Railroad", "", Property.PROPERTY, 200,15));
-        properties.put(16, new Property("St. James Place",       "", Property.PROPERTY, 180,16));
-        properties.put(17, new Property("Community Chest",       "", Property.PENALTY,  0,  17));
-        properties.put(18, new Property("Tennessee Avenue",      "", Property.PROPERTY, 180,18));
-        properties.put(19, new Property("New York Avenue",       "", Property.PROPERTY, 200,19));
-        properties.put(20, new Property("Free Parking",          "", Property.PENALTY,  0,  20));
-        properties.put(21, new Property("Kentucky Avenue",       "", Property.PROPERTY, 220,21));
-        properties.put(22, new Property("Chance",                "", Property.PENALTY,  0,  22));
-        properties.put(23, new Property("Indiana Avenue",        "", Property.PROPERTY, 220,23));
-        properties.put(24, new Property("Illinois Avenue",       "", Property.PROPERTY, 240,24));
-        properties.put(25, new Property("B&O Railroad",          "", Property.PROPERTY, 200,25));
-        properties.put(26, new Property("Atlantic Avenue",       "", Property.PROPERTY, 260,26));
-        properties.put(27, new Property("Ventnor Avenue",        "", Property.PROPERTY, 260,27));
-        properties.put(28, new Property("Water Works",           "", Property.PROPERTY, 150,28));
-        properties.put(29, new Property("Marvin Gardens",        "", Property.PROPERTY, 280,29));
-        properties.put(30, new Property("Police Bribe",          "", Property.PENALTY,  50, 30));
-        properties.put(31, new Property("Pacific Avenue",        "", Property.PROPERTY, 300,31));
-        properties.put(32, new Property("North Carolina Avenue", "", Property.PROPERTY, 300,32));
-        properties.put(33, new Property("Community Chest",       "", Property.PENALTY,  0,  33));
-        properties.put(34, new Property("Pennsylvania Avenue",   "", Property.PROPERTY, 320,34));
-        properties.put(35, new Property("Short Line Railroad",   "", Property.PROPERTY, 200,35));
-        properties.put(36, new Property("Chance",                "", Property.PENALTY,  0,  36));
-        properties.put(37, new Property("Park Place",            "", Property.PROPERTY, 350,37));
-        properties.put(38, new Property("Luxury Tax",            "", Property.PENALTY,  0,  38));
-        properties.put(39, new Property("Boardwalk",             "", Property.PROPERTY, 400,39));
-        properties.put(40, new Property("GO",                    "", Property.PENALTY,  0,  40));
+        properties.put(1,  new Property("Mediterranean Avenue",  "", Property.PROPERTY, 60));
+        properties.put(2,  new Property("Community Chest",       "", Property.PENALTY,  0));
+        properties.put(3,  new Property("Baltic Avenue",         "", Property.PROPERTY, 60));
+        properties.put(4,  new Property("Income Tax",            "", Property.PENALTY,  200));
+        properties.put(5,  new Property("Reading Railroad",      "", Property.PROPERTY, 200));
+        properties.put(6,  new Property("Oriental Avenue",       "", Property.PROPERTY, 100));
+        properties.put(7,  new Property("Chance",                "", Property.PROPERTY, 0));
+        properties.put(8,  new Property("Vermont Avenue",        "", Property.PROPERTY, 100));
+        properties.put(9,  new Property("Connecticut Avenue",    "", Property.PROPERTY, 120));
+        properties.put(10, new Property("Jail Visit",            "", Property.PENALTY,  50));
+        properties.put(11, new Property("St. Charles Place",     "", Property.PROPERTY, 140));
+        properties.put(12, new Property("Electric Company",      "", Property.PROPERTY, 150));
+        properties.put(13, new Property("States Avenue",         "", Property.PROPERTY, 140));
+        properties.put(14, new Property("Virginia Avenue",       "", Property.PROPERTY, 160));
+        properties.put(15, new Property("Pennsylvania Railroad", "", Property.PROPERTY, 200));
+        properties.put(16, new Property("St. James Place",       "", Property.PROPERTY, 180));
+        properties.put(17, new Property("Community Chest",       "", Property.PENALTY,  0));
+        properties.put(18, new Property("Tennessee Avenue",      "", Property.PROPERTY, 180));
+        properties.put(19, new Property("New York Avenue",       "", Property.PROPERTY, 200));
+        properties.put(20, new Property("Free Parking",          "", Property.PENALTY,  0));
+        properties.put(21, new Property("Kentucky Avenue",       "", Property.PROPERTY, 220));
+        properties.put(22, new Property("Chance",                "", Property.PENALTY,  0));
+        properties.put(23, new Property("Indiana Avenue",        "", Property.PROPERTY, 220));
+        properties.put(24, new Property("Illinois Avenue",       "", Property.PROPERTY, 240));
+        properties.put(25, new Property("B&O Railroad",          "", Property.PROPERTY, 200));
+        properties.put(26, new Property("Atlantic Avenue",       "", Property.PROPERTY, 260));
+        properties.put(27, new Property("Ventnor Avenue",        "", Property.PROPERTY, 260));
+        properties.put(28, new Property("Water Works",           "", Property.PROPERTY, 150));
+        properties.put(29, new Property("Marvin Gardens",        "", Property.PROPERTY, 280));
+        properties.put(30, new Property("Police Bribe",          "", Property.PENALTY,  50));
+        properties.put(31, new Property("Pacific Avenue",        "", Property.PROPERTY, 300));
+        properties.put(32, new Property("North Carolina Avenue", "", Property.PROPERTY, 300));
+        properties.put(33, new Property("Community Chest",       "", Property.PENALTY,  0));
+        properties.put(34, new Property("Pennsylvania Avenue",   "", Property.PROPERTY, 320));
+        properties.put(35, new Property("Short Line Railroad",   "", Property.PROPERTY, 200));
+        properties.put(36, new Property("Chance",                "", Property.PENALTY,  0));
+        properties.put(37, new Property("Park Place",            "", Property.PROPERTY, 350));
+        properties.put(38, new Property("Luxury Tax",            "", Property.PENALTY,  0));
+        properties.put(39, new Property("Boardwalk",             "", Property.PROPERTY, 400));
+        properties.put(40, new Property("GO",                    "", Property.PENALTY,  0));
 
         return properties;
     }
