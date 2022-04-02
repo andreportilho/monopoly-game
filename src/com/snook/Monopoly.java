@@ -8,11 +8,12 @@ public class Monopoly {
     public static void main(String[] args) {
         Statistic statistic = new Statistic();
 
-        int maxNumberOfGames = 5;
+        int maxNumberOfGames = 1000;
         for (int i = 0; i < maxNumberOfGames; i++){
             simulationGame(setProperties(), registerPlayers(), statistic);
         }
-        System.out.println("Average number of rolls(turns): " + statistic.getAverageTurns() / statistic.getTotalGames());
+        System.out.println("Average number of rolls(turns) in all games: " + statistic.getAverageTurns() / statistic.getTotalGames());
+
         System.out.println("Average number of properties purchased in all games: " + statistic.getTotalPurchasedProperties() / statistic.getTotalGames());
 
         double percentageOfTotalIndianaAvenuePurchased = (statistic.getTotalIndianaAvenuePurchased() * 100) / statistic.getTotalGames();
@@ -37,7 +38,7 @@ public class Monopoly {
             actualPlayer = nextPlayer(actualPlayer);
         }
         while(!endGame);
-        //Average of dice rolled per game
+        //Average of dice(turns) rolled per game
         statistic.addAverageTurns(sumDiceRolledPerGame(players) / players.size());
         statistic.addAverageProperties(countPropertiesPurchasedPerGame(properties));
         if (isIndianaAvenuePurchasedInGame(properties)) {
