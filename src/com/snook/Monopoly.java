@@ -66,8 +66,6 @@ public class Monopoly {
                 .anyMatch(combinadeCondition);
     }
 
-
-
     private static int nextPlayer(int actualPlayer) {
         if (actualPlayer == 1){
             actualPlayer = 2;
